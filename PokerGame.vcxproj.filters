@@ -41,5 +41,8 @@
     <ClInclude Include="PokerGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Pot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
