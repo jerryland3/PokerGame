@@ -135,6 +135,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="PokerGame.h" />
     <ClInclude Include="PokerHand.h" />
+    <ClInclude Include="PokerMoves.h" />
     <ClInclude Include="PokerRanks.h" />
     <ClInclude Include="PokerRankUtils.h" />
     <ClInclude Include="Pot.h" />

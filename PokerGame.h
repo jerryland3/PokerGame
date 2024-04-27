@@ -3,6 +3,7 @@
 #include "Player.h"
 #include "DeckDealer.h"
 #include "Pot.h"
+#include "PokerMoves.h"
 #include <vector>
 using namespace std;
 
@@ -67,7 +68,7 @@ public:
 				// if player is computer, do this later
 			}
 			round++;
-			betMade = false;
+			pokerMoves.resetBet();
 
 			// replace cards round. Computer player dont replace cards
 			for (int i = 0; i < players.size(); i++) {
@@ -96,9 +97,8 @@ private:
 	std::vector<Player> players;
 	std::vector<int> winners;
 	Pot pot;
-	int lastBet = 0;
+	PokerMoves pokerMoves;
 	int winnerIndex = -1;
-	bool betMade = false;
 	bool keepPlaying = true;
 
 	void dealHands() {
@@ -118,7 +118,7 @@ private:
 		cout << "Your chips: " << players[playerIndex].getChips() << endl;
 
 		// check if bet has been made
-		if (!betMade) {
+		if (!pokerMoves.getBetMade()) {
 			// ask player if they want to bet or check or fold
 			cout << "Do you want to bet, check, or fold? (b/c/f): ";
 			char choice;
@@ -130,17 +130,16 @@ private:
 			}
 			// make move based on choice
 			if (choice == 'b') {
-				betMove(playerIndex);
-				betMade = true;
+				pokerMoves.makeBet(&players.at(playerIndex), &pot);
 			}
 			else if (choice == 'f') {
-				foldMove(playerIndex);
+				pokerMoves.makeFold(&players.at(playerIndex));
 			}
 		}
-		// else bet has been made or we are in round 2
+		// else bet has been made
 		else {
 			// show last bet
-			cout << "The last bet was: " << lastBet << endl;
+			cout << "The last bet was: " << pokerMoves.getLastBet() << endl;
 			// ask player if they want to raise or call or fold
 			cout << "Do you want to raise, call, or fold? (r/c/f): ";
 			char choice;
@@ -152,85 +151,15 @@ private:
 			}
 			// make move based on choice
 			if (choice == 'r') {
-				raiseMove(playerIndex);
+				pokerMoves.makeRaise(&players.at(playerIndex), &pot);
 			}
 			else if (choice == 'f') {
-				foldMove(playerIndex);
+				pokerMoves.makeFold(&players.at(playerIndex));
 			}
 			else {
-				callMove(playerIndex);
+				pokerMoves.makeCall(&players.at(playerIndex), &pot);
 			}
 		}
-	}
-
-	void betMove(int playerIndex) {
-		// ask player how much they want to bet
-		cout << "How much would you like to bet? (max bet is " << pot.getMaxBet() << "): ";
-		cout << "Your current chips: " << players[playerIndex].getChips() << endl;
-		int bet;
-		cin >> bet;
-		// make sure bet is valid
-		while (bet < 0 || bet > pot.getMaxBet() || bet > players[playerIndex].getChips()) {
-			int canBet = players[playerIndex].getChips() > pot.getMaxBet() ? pot.getMaxBet() : players[playerIndex].getChips();
-			cout << "Invalid bet. Please enter a bet between 0 and " << canBet << ": ";
-			cin >> bet;
-		}
-		// subtract bet from player's chips
-		players[playerIndex].setChips(players[playerIndex].getChips() - bet);
-		// add bet to pot
-		pot.increasePot(bet);
-		lastBet = bet;
-
-		// show the pot and player chips
-		cout << "The pot is now: " << pot.getPotAmount() << endl;
-		cout << "Your chips: " << players[playerIndex].getChips() << endl;
-	}
-
-	void foldMove(int playerIndex) {
-		// fold player's hand
-		players[playerIndex].fold();
-	}
-
-	void raiseMove(int playerIndex) {
-		// ask player how much they want to raise
-		cout << "How much would you like to raise? (max raise is " << pot.getMaxRaise() << "): ";
-		cout << "Your current chips: " << players[playerIndex].getChips() << endl;
-		int raise;
-		cin >> raise;
-		// make sure raise is valid
-		while (raise < 0 || raise > pot.getMaxRaise() || raise > players[playerIndex].getChips()) {
-			int canBet = players[playerIndex].getChips() > pot.getMaxRaise() ? pot.getMaxRaise() : players[playerIndex].getChips();
-			cout << "Invalid raise. Please enter a raise between 0 and " << canBet << ": ";
-			cin >> raise;
-		}
-		// subtract raise from player's chips
-		players[playerIndex].setChips(players[playerIndex].getChips() - raise);
-		// add raise to pot
-		pot.increasePot(raise);
-		lastBet = raise;
-
-		// show the pot and player chips
-		cout << "The pot is now: " << pot.getPotAmount() << endl;
-		cout << "Your chips: " << players[playerIndex].getChips() << endl;
-	}
-
-	void callMove(int playerIndex) {
-		// subtract the difference between the current bet and the player's current bet from the player's chips
-		int newAmount = players[playerIndex].getChips() - lastBet;
-		// check if player has enough chips to call
-		if (newAmount < 0) {
-			cout << "You do not have enough chips to call. You are all in." << endl;
-			newAmount = 0;
-			pot.increasePot(players[playerIndex].getChips());
-		}
-		else {
-			pot.increasePot(lastBet);
-		}
-		players[playerIndex].setChips(newAmount);
-
-		// show the pot and player chips
-		cout << "The pot is now: " << pot.getPotAmount() << endl;
-		cout << "Your chips: " << players[playerIndex].getChips() << endl;
 	}
 
 	void replaceCards(int playerIndex) {
@@ -381,12 +310,11 @@ private:
 
 	void resetGame() {
 		// reset the game state
-		pot.resetPot();
-		lastBet = 0;
 		winnerIndex = -1;
 		winners.clear();
-		betMade = false;
 		dealer.resetDeck();
+		pot.resetPot();
+		pokerMoves.resetBet();
 
 		// reset each player
 		for (int i = 0; i < players.size(); i++) {
