@@ -51,9 +51,22 @@ public:
 		return hand.compareHand(otherHand);
 	}
 
+	void setBetAmount(int betAmount) {
+		this->betAmount = betAmount;
+	}
+
+	int getBetAmount() const {
+		return betAmount;
+	}
+
+	void resetBetAmount() {
+		betAmount = 0;
+	}
+
 private:
 	std::string name;
 	PokerHand hand;
 	int chips;
-	bool folded;
+	int betAmount = 0;
+	bool folded = false;
 };
