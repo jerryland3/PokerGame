@@ -38,12 +38,23 @@ public:
 		// set each player
 		for (int i = 0; i < numPlayers; i++) {
 			int chips = 300;
-			// if player is human
-			string name;
-			cout << "Enter the name of player " << i + 1 << ": ";
-			cin >> name;
-			Player player(name, chips);
-			players.push_back(player);
+			int computerPlayerIndex = 1;
+
+			// set human player
+			if (i < numHumanPlayers) {
+				string name;
+				cout << "Enter the name of player " << i + 1 << ": ";
+				cin >> name;
+				Player player(name, chips, PlayerType::HUMAN_PLAYER);
+				players.push_back(player);
+			}
+			// set computer player
+			else {
+				string name = "Computer " + to_string(computerPlayerIndex);
+				Player player(name, chips, PlayerType::COMPUTER_PLAYER);
+				players.push_back(player);
+				computerPlayerIndex++;
+			}
 		}
 	}
 
@@ -58,8 +69,13 @@ public:
 
 			// round 1
 			for (int i = 0; i < players.size(); i++) {
-				// if player is human. add computer round later
-				humanRound(i);
+				// if player is human
+				if (players.at(i).getPlayerType() == PlayerType::HUMAN_PLAYER) {
+					humanRound(i);
+				}
+				else {
+					computerRound(i); // computer round
+				}
 			}
 			round++;
 			pokerMoves.resetBet();
@@ -82,7 +98,7 @@ public:
 			// replace cards round. Computer player dont replace cards
 			for (int i = 0; i < players.size(); i++) {
 				// if player is human and have not folded
-				if (!players.at(i).getFold()) {
+				if (!players.at(i).getFold() && players.at(i).getPlayerType() == PlayerType::HUMAN_PLAYER) {
 					dealer.replaceCards(&players[i], players.size());
 				}
 			}
@@ -91,9 +107,12 @@ public:
 			std::cout << "\nRound " << round << std::endl;
 			std::cout << "The pot is now: " << pot.getPotAmount() << std::endl;
 			for (int i = 0; i < players.size(); i++) {
-				// if player is human. add computer round later
-				if (!players.at(i).getFold()) {
+				// if player is human
+				if (!players.at(i).getFold() && players.at(i).getPlayerType() == PlayerType::HUMAN_PLAYER) {
 					humanRound(i);
+				}
+				else {
+					computerRound(i); // computer round
 				}
 			}
 
@@ -171,6 +190,18 @@ private:
 		}
 	}
 
+	void computerRound(int playerIndex) {
+		cout << "\n" << players[playerIndex].getName() << ";s turn" << endl;
+		cout << "Its chips: " << players[playerIndex].getChips() << endl;
+		// computer player will always check if no bet is made
+
+		// check if bet has been made, always call
+		if (pokerMoves.getBetMade()) {
+			cout << "The last bet was: " << pokerMoves.getLastBet() << endl;
+			pokerMoves.makeCall(&players.at(playerIndex), &pot);
+		}
+	}
+
 	void determineWinner() {
 		// determine index of players that have not folded
 		std::vector<int> stillInGamePlayers;
@@ -190,15 +221,29 @@ private:
 			return;
 		}
 
+		// compare hands of players that have not folded
 		winnerIndex = stillInGamePlayers.at(0); // set first player to be winner
 		for (int i = 1; i < stillInGamePlayers.size(); i++) {
-			if (players[i].compareHand(players[winnerIndex].getHand()) == 1) {
-				winnerIndex = i;
+			int stillInGamePlayerIndex = stillInGamePlayers.at(i);
+			if (players[stillInGamePlayerIndex].compareHand(players[winnerIndex].getHand()) == 1) {
+				winnerIndex = stillInGamePlayerIndex;
 			}
-			else if (players[i].compareHand(players[winnerIndex].getHand()) == 0) {
-				winners.push_back(i);
+			else if (players[stillInGamePlayerIndex].compareHand(players[winnerIndex].getHand()) == 0) {
+				winners.push_back(stillInGamePlayerIndex);
 				winners.push_back(winnerIndex);
 			}
+		}
+
+		// remove duplicates from winners
+		std::sort(winners.begin(), winners.end());
+		winners.erase(std::unique(winners.begin(), winners.end()), winners.end());
+
+		// check to make sure winnerIndex does not have better hand than winners
+		if (winners.size() == 0) {
+			return;
+		}
+		else if (players[winnerIndex].compareHand(players[winners[0]].getHand()) == 1) {
+			winners.clear();
 		}
 	}
 

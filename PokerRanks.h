@@ -21,3 +21,8 @@ enum class PokerRanks {
 	FOUR_OF_A_KIND, /**< Four of a kind */
 	STRAIGHT_FLUSH /**< Straight flush */
 };
+
+enum class PlayerType {
+	HUMAN_PLAYER,   /**< Human player */
+	COMPUTER_PLAYER /**< Computer player */
+};

@@ -123,26 +123,35 @@ private:
 
 	void askPreviousPlayerToCall(std::vector<Player>& players, Pot* pot, int playerIndex) {
 		for (int i = 0; i < playerIndex; i++) {
-			// ask previous player if they want to call or fold
-			std::cout << "\n";
-			std::cout << players.at(playerIndex).getName() << " have raised to " << lastBet << std::endl;
-			std::cout << players.at(i).getName() << ", Do you want to call to match the bet or fold? (c/f): " << std::endl;
+			// if player has not folded
+			bool folded = players.at(i).getFold();
+			PlayerType type = players.at(i).getPlayerType();
+			if (!folded && type == PlayerType::HUMAN_PLAYER) {
+				// ask previous player if they want to call or fold
+				std::cout << "\n";
+				std::cout << players.at(playerIndex).getName() << " have raised to " << lastBet << std::endl;
+				std::cout << players.at(i).getName() << ", Do you want to call to match the bet or fold? (c/f): " << std::endl;
 
-			char choice;
-			std::cin >> choice;
-			// make sure choice is valid
-			while (choice != 'c' && choice != 'f') {
-				std::cout << "Invalid choice. Please enter c or f: ";
-				std::cin.clear();
-				std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+				char choice;
 				std::cin >> choice;
-			}
+				// make sure choice is valid
+				while (choice != 'c' && choice != 'f') {
+					std::cout << "Invalid choice. Please enter c or f: ";
+					std::cin.clear();
+					std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+					std::cin >> choice;
+				}
 
-			if (choice == 'c') {
-				makeCall(&players.at(i), pot);
+				if (choice == 'c') {
+					makeCall(&players.at(i), pot);
+				}
+				else {
+					makeFold(&players.at(i));
+				}
 			}
-			else {
-				makeFold(&players.at(i));
+			else if (!folded && type == PlayerType::COMPUTER_PLAYER) {
+				// AI player will always call
+				makeCall(&players.at(i), pot);
 			}
 		}
 	}

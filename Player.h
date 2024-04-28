@@ -3,9 +3,7 @@
 
 class Player {
 public:
-	Player(std::string name, int chips) : name{ name }, chips{ chips }, folded{ false } {}
-
-	//Player() = default;
+	Player(std::string name, int chips, PlayerType playerType) : name{ name }, chips{ chips }, type{ playerType } {}
 
 	std::string getName() const {
 		return name;
@@ -63,10 +61,15 @@ public:
 		betAmount = 0;
 	}
 
+	PlayerType getPlayerType() const {
+		return type;
+	}
+
 private:
 	std::string name;
 	PokerHand hand;
 	int chips;
 	int betAmount = 0;
 	bool folded = false;
+	PlayerType type;
 };

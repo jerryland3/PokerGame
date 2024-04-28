@@ -112,7 +112,23 @@ private:
 	 * @return A string indicating which hand is higher.
 	 */
 	int compareSameRank(PokerHand hand2) {
-		// loop through the hand and compare the value of the cards
+		// use different method to compare the hands based on the rank
+		if (rank == PokerRanks::FOUR_OF_A_KIND) {
+			return sameRankFourOfAKind(hand2);
+		}
+		else if (rank == PokerRanks::FULL_HOUSE) {
+			return sameRankFullHouse(hand2);
+		}
+		else if (rank == PokerRanks::THREE_OF_A_KIND) {
+			return sameRankTreeOfAKind(hand2);
+		}
+		else if (rank == PokerRanks::TWO_PAIR) {
+			return sameRankTwoPair(hand2);
+		}
+		else if (rank == PokerRanks::PAIR) {
+			return sameRankPair(hand2);
+		}
+		// all other ranks covered by this
 		for (int i = 4; i >= 0; i--) {
 			if (hand[i].getValue() > hand2.hand[i].getValue()) {
 				return 1;
@@ -122,6 +138,282 @@ private:
 			}
 		}
 		// both hand have the same rank and the same value of cards
+		return 0;
+	}
+
+	int sameRankFourOfAKind(PokerHand hand2) {
+		// Find the value of the four of a kind.
+		int quadCardValue1 = 0;
+		int quadCardValue2 = 0;
+
+		int singleCardValue1 = 0;
+		int singleCardValue2 = 0;
+
+		for (int i = 0; i < 2; i++) {
+			if (hand[i].getValue() == hand[i + 1].getValue() && hand[i + 1].getValue() == hand[i + 2].getValue() && hand[i + 2].getValue() == hand[i + 3].getValue()) {
+				quadCardValue1 = hand[i].getValue();
+			}
+			else if (i == 0 && quadCardValue1 == 0)
+			{
+				singleCardValue1 = hand[i].getValue();
+			}
+			else {
+				singleCardValue1 = hand[4].getValue();
+			}
+
+			if (hand2.hand[i].getValue() == hand2.hand[i + 1].getValue() && hand2.hand[i + 1].getValue() == hand2.hand[i + 2].getValue() && hand2.hand[i + 2].getValue() == hand2.hand[i + 3].getValue()) {
+				quadCardValue2 = hand2.hand[i].getValue();
+			}
+			else if (i == 0 && quadCardValue2 == 0)
+			{
+				singleCardValue2 = hand2.hand[i].getValue();
+			}
+			else {
+				singleCardValue2 = hand2.hand[4].getValue();
+			}
+		}
+
+		// Compare the value of the four of a kind.
+		if (quadCardValue1 > quadCardValue2) {
+			return 1;
+		}
+		else if (quadCardValue1 < quadCardValue2) {
+			return 2;
+		}
+		else {
+			// Compare the value of the remaining card.
+			if (singleCardValue1 > singleCardValue2) {
+				return 1;
+			}
+			else if (singleCardValue1 < singleCardValue2) {
+				return 2;
+			}
+			else {
+				return 0;
+			}
+		}
+	}
+
+	int sameRankFullHouse(PokerHand hand2) {
+		int tripleCardValue1 = 0;
+		int tripleCardValue2 = 0;
+
+		int doubleCardValue1 = 0;
+		int doubleCardValue2 = 0;
+
+		// Find the value of the triple card.
+		for (int i = 0; i < 3; i++) {
+			if (hand[i].getValue() == hand[i + 1].getValue() && hand[i + 1].getValue() == hand[i + 2].getValue()) {
+				tripleCardValue1 = hand[i].getValue();
+			}
+
+			if (hand2.hand[i].getValue() == hand2.hand[i + 1].getValue() && hand2.hand[i + 1].getValue() == hand2.hand[i + 2].getValue()) {
+				tripleCardValue2 = hand2.hand[i].getValue();
+			}
+		}
+
+		// Find the value of the pair.
+		for (int i = 0; i < 5; i++) {
+			if (hand[i].getValue() != tripleCardValue1) {
+				doubleCardValue1 = hand[i].getValue();
+			}
+			if (hand2.hand[i].getValue() != tripleCardValue2) {
+				doubleCardValue2 = hand2.hand[i].getValue();
+			}
+		}
+
+		// Compare the value of the three of a kind.
+		if (tripleCardValue1 > tripleCardValue2) {
+			return 1;
+		}
+		else if (tripleCardValue1 < tripleCardValue2) {
+			return 2;
+		}
+		else {
+			// Compare the value of the pair.
+			if (doubleCardValue1 > doubleCardValue2) {
+				return 1;
+			}
+			else if (doubleCardValue1 < doubleCardValue2) {
+				return 2;
+			}
+			else {
+				return 0;
+			}
+		}
+	}
+
+	int sameRankTreeOfAKind(PokerHand hand2) {
+		int tripleCardValue1 = 0;
+		int tripleCardValue2 = 0;
+
+		int singleCardValues1[] = { 0, 0 };
+		int singleCardValues2[] = { 0, 0 };
+
+		// Find the value of the triple card.
+		for (int i = 0; i < 3; i++) {
+			if (hand[i].getValue() == hand[i + 1].getValue() && hand[i + 1].getValue() == hand[i + 2].getValue()) {
+				tripleCardValue1 = hand[i].getValue();
+			}
+			else if (i == 0) {
+				singleCardValues1[0] = hand[0].getValue();
+				singleCardValues1[1] = hand[1].getValue();
+			}
+			else if (i == 2) {
+				singleCardValues1[0] = hand[3].getValue();
+				singleCardValues1[1] = hand[4].getValue();
+			}
+
+			if (hand2.hand[i].getValue() == hand2.hand[i + 1].getValue() && hand2.hand[i + 1].getValue() == hand2.hand[i + 2].getValue()) {
+				tripleCardValue2 = hand2.hand[i].getValue();
+			}
+			else if (i == 0) {
+				singleCardValues2[0] = hand2.hand[0].getValue();
+				singleCardValues2[1] = hand2.hand[1].getValue();
+			}
+			else if (i == 2) {
+				singleCardValues2[0] = hand2.hand[3].getValue();
+				singleCardValues2[1] = hand2.hand[4].getValue();
+			}
+		}
+
+		// sort the array of single card values
+		std::sort(singleCardValues1, singleCardValues1 + 2);
+		std::sort(singleCardValues2, singleCardValues2 + 2);
+
+		// Compare the value of the three of a kind.
+		if (tripleCardValue1 > tripleCardValue2) {
+			return 1;
+		}
+		else if (tripleCardValue1 < tripleCardValue2) {
+			return 2;
+		}
+
+		for (int i = 1; i >= 0; i--) {
+			if (singleCardValues1[i] > singleCardValues2[i]) {
+				return 1;
+			}
+			else if (singleCardValues1[i] < singleCardValues2[i]) {
+				return 2;
+			}
+		}
+		return 0;
+	}
+
+	int sameRankTwoPair(PokerHand hand2) {
+		int pairCardValues1[] = { 0, 0 };
+		int pairCardValues2[] = { 0, 0 };
+
+		int singleCardValue1 = 0;
+		int singleCardValue2 = 0;
+
+		// Find the value of the pairs.
+		int pairCount1 = 0;
+		int pairCount2 = 0;
+		for (int i = 0; i < 4; i++) {
+			if (hand[i].getValue() == hand[i + 1].getValue()) {
+				pairCardValues1[pairCount1++] = hand[i].getValue();
+			}
+
+			if (hand2.hand[i].getValue() == hand2.hand[i + 1].getValue()) {
+				pairCardValues2[pairCount2++] = hand2.hand[i].getValue();
+			}
+		}
+
+		// Find the value of the single card.
+		for (int i = 0; i < 5; i++) {
+			if (hand[i].getValue() != pairCardValues1[0] && hand[i].getValue() != pairCardValues1[1]) {
+				singleCardValue1 = hand[i].getValue();
+			}
+			if (hand2.hand[i].getValue() != pairCardValues2[0] && hand2.hand[i].getValue() != pairCardValues2[1]) {
+				singleCardValue2 = hand2.hand[i].getValue();
+			}
+		}
+
+		// sort the array of pair card values
+		std::sort(pairCardValues1, pairCardValues1 + 2);
+		std::sort(pairCardValues2, pairCardValues2 + 2);
+
+		// Compare the value of the pairs.
+		for (int i = 1; i >= 0; i--) {
+			if (pairCardValues1[i] > pairCardValues2[i]) {
+				return 1;
+			}
+			else if (pairCardValues1[i] < pairCardValues2[i]) {
+				return 2;
+			}
+		}
+
+		// Compare the value of the single card.
+		if (singleCardValue1 > singleCardValue2) {
+			return 1;
+		}
+		else if (singleCardValue1 < singleCardValue2) {
+			return 2;
+		}
+		else {
+			return 0;
+		}
+	}
+
+	int sameRankPair(PokerHand hand2) {
+		int pairCardValue1 = 0;
+		int pairCardValue2 = 0;
+
+		int singleCardValues1[] = { 0, 0, 0 };
+		int singleCardValues2[] = { 0, 0, 0 };
+
+		// Find the value of the pair.
+		for (int i = 0; i < 4; i++) {
+			if (hand[i].getValue() == hand[i + 1].getValue()) {
+				pairCardValue1 = hand[i].getValue();
+			}
+			else if (i == 0) {
+				singleCardValues1[0] = hand[0].getValue();
+				singleCardValues1[1] = hand[1].getValue();
+				singleCardValues1[2] = hand[2].getValue();
+			}
+			else if (i == 3) {
+				singleCardValues1[0] = hand[2].getValue();
+				singleCardValues1[1] = hand[3].getValue();
+				singleCardValues1[2] = hand[4].getValue();
+			}
+
+			if (hand2.hand[i].getValue() == hand2.hand[i + 1].getValue()) {
+				pairCardValue2 = hand2.hand[i].getValue();
+			}
+			else if (i == 0) {
+				singleCardValues2[0] = hand2.hand[0].getValue();
+				singleCardValues2[1] = hand2.hand[1].getValue();
+				singleCardValues2[2] = hand2.hand[2].getValue();
+			}
+			else if (i == 3) {
+				singleCardValues2[0] = hand2.hand[2].getValue();
+				singleCardValues2[1] = hand2.hand[3].getValue();
+				singleCardValues2[2] = hand2.hand[4].getValue();
+			}
+		}
+
+		// sort the array of single card values
+		std::sort(singleCardValues1, singleCardValues1 + 3);
+		std::sort(singleCardValues2, singleCardValues2 + 3);
+
+		// Compare the value of the pair.
+		if (pairCardValue1 > pairCardValue2) {
+			return 1;
+		}
+		else if (pairCardValue1 < pairCardValue2) {
+			return 2;
+		}
+
+		for (int i = 2; i >= 0; i--) {
+			if (singleCardValues1[i] > singleCardValues2[i]) {
+				return 1;
+			}
+			else if (singleCardValues1[i] < singleCardValues2[i]) {
+				return 2;
+			}
+		}
 		return 0;
 	}
 
