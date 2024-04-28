@@ -38,15 +38,12 @@ public:
 		// set each player
 		for (int i = 0; i < numPlayers; i++) {
 			int chips = 300;
-
 			// if player is human
 			string name;
 			cout << "Enter the name of player " << i + 1 << ": ";
 			cin >> name;
 			Player player(name, chips);
 			players.push_back(player);
-
-			// if player is computer, do this later
 		}
 	}
 
